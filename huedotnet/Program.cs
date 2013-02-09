@@ -5,6 +5,8 @@ using System.Text;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace huedotnet
 {
@@ -12,11 +14,13 @@ namespace huedotnet
     {
         private static String bridgeIP;
         private static String username;
-        private static HttpWebRequest httpRequest;
-        private static Dictionary<int, string> lamps;
+        private static WebClient webClient;
+        private static Dictionary<int, HueLamp> lamps;
 
         static void Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.Unicode;
+            
             bool loadConfigSuccess = loadConfig();
             if (!loadConfigSuccess)
             {
@@ -25,9 +29,28 @@ namespace huedotnet
                 return;
             }
 
-            openHttpSocket();
+            getWebClient();
 
+            getLampList();
+
+
+            foreach (int i in lamps.Keys)
+            {
+                HueLamp l;
+                lamps.TryGetValue(i, out l);
+                Console.WriteLine("Lamp [" + i + "] on [" + l.GetState() + "] name [" + l.GetName() + "] rgb [" + l.GetR() + ", " + l.GetG() + ", " + l.GetB() + "]");
+            }
+
+            Console.ReadLine();
             showMainMenu();
+        }
+
+        private static void getLampList()   
+        {
+            String jsonState = webClient.DownloadString(webClient.BaseAddress);
+
+            JsonLampList lampList = JsonConvert.DeserializeObject<JsonLampList>(jsonState);
+            lamps = lampList.ConvertToHueLamps();
         }
 
         private static bool loadConfig()
@@ -56,10 +79,11 @@ namespace huedotnet
             return success;
         }
 
-        private static void openHttpSocket()
+        private static void getWebClient()
         {
-            httpRequest = (HttpWebRequest) WebRequest.Create("http://" + bridgeIP + "/api/" + username);
-            httpRequest.Pipelined = true;
+            webClient = new WebClient();
+            webClient.BaseAddress = "http://" + bridgeIP + "/api/" + username + "/";
+            Console.WriteLine("Creating a web client with base address [" + webClient.BaseAddress + "]");
         }
 
         private static void showMainMenu()
@@ -78,6 +102,8 @@ namespace huedotnet
                 {
                     case "x":
                         return;
+                    case "a":
+                        
                     case "m":
                         showManualMenu();
                         break;
@@ -136,6 +162,8 @@ namespace huedotnet
             Console.Clear();
             Console.WriteLine("\n\n");
             Console.WriteLine("\t[Main Menu]\n");
+            Console.WriteLine("\tAll on");
+            Console.WriteLine("\tall Off");
             Console.WriteLine("\tManual");
             Console.WriteLine("\tPresets");
             Console.WriteLine("\teXit");

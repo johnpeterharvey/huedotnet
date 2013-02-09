@@ -7,10 +7,10 @@ using System.Drawing;
 
 namespace huedotnet
 {
-    class HueLamp
+    public class HueLamp
     {
         private int lampNumber;
-        private int? brightness = null;
+        private String name;
         private bool? on = null;
         private int? r = null;
         private int? g = null;
@@ -22,10 +22,10 @@ namespace huedotnet
             this.lampNumber = lampNumber;
         }
 
-        public void SetBrightness(int brightness)
-        {
-            this.brightness = brightness;
-        }
+        //public void SetBrightness(int brightness)
+        //{
+        //    this.brightness = brightness;
+        //}
 
         public void SetState(bool onoff)
         {
@@ -44,9 +44,39 @@ namespace huedotnet
             this.transitionTime = (int) Math.Round(timeMilli / 100d);
         }
 
+        public void SetName(String name)
+        {
+            this.name = name;
+        }
+
+        public String GetName()
+        {
+            return this.name;
+        }
+
+        public int? GetR()
+        {
+            return this.r;
+        }
+
+        public int? GetG()
+        {
+            return this.g;
+        }
+
+        public int? GetB()
+        {
+            return this.b;
+        }
+
         public int GetLampNumber()
         {
             return this.lampNumber;
+        }
+
+        public bool? GetState()
+        {
+            return this.on;
         }
 
         public String GetJson()
@@ -54,7 +84,7 @@ namespace huedotnet
             ArrayList commands = new ArrayList();
 
             if (on != null) commands.Add("\"on\": " + on);
-            if (brightness != null) commands.Add("\"bri\": " + brightness);
+            //if (brightness != null) commands.Add("\"bri\": " + brightness);
             if (transitionTime != null) commands.Add("\"transitiontime\": " + transitionTime);
 
             if (r != null && g != null && b != null) {
