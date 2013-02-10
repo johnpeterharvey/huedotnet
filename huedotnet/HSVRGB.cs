@@ -57,9 +57,9 @@ namespace huedotnet
 
             double m = bri - chroma;
 
-            r = (int) Math.Round((rprime + m) * 256);
-            g = (int) Math.Round((gprime + m) * 256);
-            b = (int) Math.Round((bprime + m) * 256);
+            r = (int) Math.Round((rprime + m) * 255);
+            g = (int) Math.Round((gprime + m) * 255);
+            b = (int) Math.Round((bprime + m) * 255);
         }
     }
 }
