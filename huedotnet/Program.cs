@@ -89,7 +89,7 @@ namespace huedotnet
             while (true)
             {
                 ConsoleKeyInfo enteredText = Console.ReadKey();
-                while (!new String[] { "m", "p", "x", "a", "o" }.Contains(enteredText.KeyChar.ToString().ToLower()))
+                while (!new String[] { "m", "p", "x", "q", "a", "o" }.Contains(enteredText.KeyChar.ToString().ToLower()))
                 {
                     enteredText = Console.ReadKey();
                 }
@@ -97,6 +97,7 @@ namespace huedotnet
                 switch (enteredText.KeyChar.ToString().ToLower())
                 {
                     case "x":
+                    case "q":
                         return;
                     case "a":
                         AllOn();
@@ -193,19 +194,23 @@ namespace huedotnet
 
         private static void AllOn()
         {
-            foreach (KeyValuePair<int, HueLamp> lampInfo in lamps)
-            {
-                lampInfo.Value.SetState(true);
-                messaging.SendMessage(lampInfo.Value);
-            }
+            AllLamps(new AllLampsStateChange((HueLamp l) => l.SetState(true)));
         }
 
         private static void AllOff()
         {
-            foreach (KeyValuePair<int, HueLamp> lampInfo in lamps) {
-                lampInfo.Value.SetState(false);
-                messaging.SendMessage(lampInfo.Value);
+            AllLamps(new AllLampsStateChange((HueLamp l) => l.SetState(false)));
+        }
+
+        private delegate void AllLampsStateChange(HueLamp lamp);
+
+        private static void AllLamps(Delegate stateChange)
+        {
+            foreach (HueLamp lamp in lamps.Values)
+            {
+                stateChange.DynamicInvoke(lamp);
             }
+            messaging.SendMessage(lamps.Values.ToList<HueLamp>());
         }
     }
 }
