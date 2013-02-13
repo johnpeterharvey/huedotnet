@@ -14,7 +14,7 @@ namespace huedotnet
     {
         private static String bridgeIP;
         private static String username;
-        private static WebClient webClient;
+        private static HueMessaging messaging;
         private static Dictionary<int, HueLamp> lamps;
 
         static void Main(string[] args)
@@ -47,9 +47,7 @@ namespace huedotnet
 
         private static void getLampList()   
         {
-            String jsonState = webClient.DownloadString(webClient.BaseAddress);
-
-            JsonLampList lampList = JsonConvert.DeserializeObject<JsonLampList>(jsonState);
+            JsonLampList lampList = JsonConvert.DeserializeObject<JsonLampList>(messaging.DownloadState());
             lamps = lampList.ConvertToHueLamps();
         }
 
@@ -81,9 +79,7 @@ namespace huedotnet
 
         private static void getWebClient()
         {
-            webClient = new WebClient();
-            webClient.BaseAddress = "http://" + bridgeIP + "/api/" + username + "/";
-            Console.WriteLine("Creating a web client with base address [" + webClient.BaseAddress + "]");
+            messaging = new HueMessaging(bridgeIP, username);
         }
 
         private static void showMainMenu()
@@ -197,27 +193,18 @@ namespace huedotnet
 
         private static void AllOn()
         {
-            foreach (int i in lamps.Keys)
+            foreach (KeyValuePair<int, HueLamp> lampInfo in lamps)
             {
-                HueLamp l;
-                lamps.TryGetValue(i, out l);
-                l.SetState(true);
-                Stream writeData = webClient.OpenWrite(webClient.BaseAddress + "lights/" + i + "/state", "PUT");
-                writeData.Write(Encoding.ASCII.GetBytes(l.GetJson()), 0, l.GetJson().Length);
-                writeData.Close();
+                lampInfo.Value.SetState(true);
+                messaging.SendMessage(lampInfo.Value);
             }
         }
 
         private static void AllOff()
         {
-            foreach (int i in lamps.Keys)
-            {
-                HueLamp l;
-                lamps.TryGetValue(i, out l);
-                l.SetState(false);
-                Stream writeData = webClient.OpenWrite(webClient.BaseAddress + "lights/" + i + "/state", "PUT");
-                writeData.Write(Encoding.ASCII.GetBytes(l.GetJson()), 0, l.GetJson().Length);
-                writeData.Close();
+            foreach (KeyValuePair<int, HueLamp> lampInfo in lamps) {
+                lampInfo.Value.SetState(false);
+                messaging.SendMessage(lampInfo.Value);
             }
         }
     }

@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="HSVRGB.cs" />
     <Compile Include="HueLamp.cs" />
+    <Compile Include="HueMessaging.cs" />
     <Compile Include="JsonLampList.cs" />
     <Compile Include="JsonLamp.cs" />
     <Compile Include="Program.cs" />
