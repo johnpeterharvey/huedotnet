@@ -83,17 +83,17 @@ namespace huedotnet
         {
             ArrayList commands = new ArrayList();
 
-            if (on != null) commands.Add("\"on\": " + on);
+            if (on != null) commands.Add("\"on\": " + (on == true ? "true" : "false"));
             //if (brightness != null) commands.Add("\"bri\": " + brightness);
             if (transitionTime != null) commands.Add("\"transitiontime\": " + transitionTime);
 
             if (r != null && g != null && b != null) {
                 Color newColor = Color.FromArgb((int) r, (int) g, (int) b);
-                commands.Add("\"hue\": " + (int) newColor.GetHue());
-                commands.Add("\"sat\": " + (int) newColor.GetSaturation());
+                commands.Add("\"hue\": \"" + (int) newColor.GetHue() + "\"");
+                commands.Add("\"sat\": \"" + (int) newColor.GetSaturation() + "\"");
             }
 
-            return "{" + String.Join(", ", commands) + "}";
+            return String.Concat("{", String.Join(", ", commands.ToArray()), "}");
         }
 
     }
