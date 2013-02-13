@@ -195,7 +195,6 @@ namespace huedotnet
             Console.WriteLine("\teXit");
         }
 
-
         private static void AllOn()
         {
             foreach (int i in lamps.Keys)
