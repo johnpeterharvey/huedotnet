@@ -93,7 +93,7 @@ namespace huedotnet
             while (true)
             {
                 ConsoleKeyInfo enteredText = Console.ReadKey();
-                while (!new String[] { "m", "p", "x" }.Contains(enteredText.KeyChar.ToString().ToLower()))
+                while (!new String[] { "m", "p", "x", "a", "o" }.Contains(enteredText.KeyChar.ToString().ToLower()))
                 {
                     enteredText = Console.ReadKey();
                 }
@@ -103,7 +103,11 @@ namespace huedotnet
                     case "x":
                         return;
                     case "a":
-                        
+                        AllOn();
+                        break;
+                    case "o":
+                        AllOff();
+                        break;
                     case "m":
                         showManualMenu();
                         break;
@@ -189,6 +193,33 @@ namespace huedotnet
             Console.WriteLine("\tBrightness [ ]");
             Console.WriteLine("\tColor [ ]");
             Console.WriteLine("\teXit");
+        }
+
+
+        private static void AllOn()
+        {
+            foreach (int i in lamps.Keys)
+            {
+                HueLamp l;
+                lamps.TryGetValue(i, out l);
+                l.SetState(true);
+                Stream writeData = webClient.OpenWrite(webClient.BaseAddress + "lights/" + i + "/state", "PUT");
+                writeData.Write(Encoding.ASCII.GetBytes(l.GetJson()), 0, l.GetJson().Length);
+                writeData.Close();
+            }
+        }
+
+        private static void AllOff()
+        {
+            foreach (int i in lamps.Keys)
+            {
+                HueLamp l;
+                lamps.TryGetValue(i, out l);
+                l.SetState(false);
+                Stream writeData = webClient.OpenWrite(webClient.BaseAddress + "lights/" + i + "/state", "PUT");
+                writeData.Write(Encoding.ASCII.GetBytes(l.GetJson()), 0, l.GetJson().Length);
+                writeData.Close();
+            }
         }
     }
 }
