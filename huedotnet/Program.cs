@@ -33,15 +33,14 @@ namespace huedotnet
 
             getLampList();
 
+            //foreach (int i in lamps.Keys)
+            //{
+            //    HueLamp l;
+            //    lamps.TryGetValue(i, out l);
+            //    Console.WriteLine("Lamp [" + i + "] on [" + l.GetState() + "] name [" + l.GetName() + "] rgb [" + l.GetR() + ", " + l.GetG() + ", " + l.GetB() + "]");
+            //}
 
-            foreach (int i in lamps.Keys)
-            {
-                HueLamp l;
-                lamps.TryGetValue(i, out l);
-                Console.WriteLine("Lamp [" + i + "] on [" + l.GetState() + "] name [" + l.GetName() + "] rgb [" + l.GetR() + ", " + l.GetG() + ", " + l.GetB() + "]");
-            }
-
-            Console.ReadLine();
+            //Console.ReadLine();
             showMainMenu();
         }
 
