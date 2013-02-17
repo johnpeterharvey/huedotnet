@@ -3,6 +3,7 @@
 #################
 
 Newtonsoft.Json.dll
+packages/
 
 *.pydevproject
 .project
