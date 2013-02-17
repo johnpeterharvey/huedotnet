@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Net;
 using System.IO;
 using Newtonsoft.Json;
+using NDesk.Options;
 
 namespace huedotnet
 {
@@ -21,7 +22,7 @@ namespace huedotnet
         {
             Console.OutputEncoding = Encoding.Unicode;
             
-            bool loadConfigSuccess = loadConfig();
+            bool loadConfigSuccess = LoadConfig();
             if (!loadConfigSuccess)
             {
                 Console.WriteLine("Failed to load config!");
@@ -33,15 +34,49 @@ namespace huedotnet
 
             getLampList();
 
-            //foreach (int i in lamps.Keys)
-            //{
-            //    HueLamp l;
-            //    lamps.TryGetValue(i, out l);
-            //    Console.WriteLine("Lamp [" + i + "] on [" + l.GetState() + "] name [" + l.GetName() + "] rgb [" + l.GetR() + ", " + l.GetG() + ", " + l.GetB() + "]");
-            //}
+            if (args.Length == 0)
+            {
+                showMainMenu();
+            }
+            else
+            {
+                ProcessArguments(args);
+            }
+        }
 
-            //Console.ReadLine();
-            showMainMenu();
+        private static void ProcessArguments(string[] arguments)
+        {
+            bool allOn = false;
+            bool allOff = false;
+
+            bool help = false;
+
+            OptionSet options = new OptionSet() {
+                {"a|all|on", "Turn all hue lamps on", v => allOn = true},
+                {"o|off", "Turn all hue lamps off", v => allOff = true},
+                {"h|help|?", "Help", v => help = true}
+            };
+
+            List<String> leftOver = options.Parse(arguments);
+            if (leftOver.Count > 0)
+            {
+                help = true;
+            }
+
+            if (help)
+            {
+                Console.WriteLine("\nHue.net Parameters:\n\n");
+                Console.WriteLine("No parameters starts app in interactive mode\n\n");
+                options.WriteOptionDescriptions(Console.Out);
+            }
+            else if (allOn)
+            {
+                AllOn();
+            }
+            else if (allOff)
+            {
+                AllOff();
+            }
         }
 
         private static void getLampList()   
@@ -50,7 +85,7 @@ namespace huedotnet
             lamps = lampList.ConvertToHueLamps();
         }
 
-        private static bool loadConfig()
+        private static bool LoadConfig()
         {
             XDocument doc = XDocument.Load("Settings.xml");
 
@@ -72,7 +107,7 @@ namespace huedotnet
 
             bool success = (bridgeIP != null && ipRegex.IsMatch(bridgeIP) && !String.IsNullOrWhiteSpace(username));
 
-            Console.WriteLine("Load config returned bridge ip [" + bridgeIP + "] and username [" + username + "] and return code [" + success + "]");
+            //Console.WriteLine("Load config returned bridge ip [" + bridgeIP + "] and username [" + username + "] and return code [" + success + "]");
             return success;
         }
 
@@ -118,12 +153,14 @@ namespace huedotnet
 
         private static void showManualMenu()
         {
-            drawManualMenu();
+            String selectedLamp = "A";
+            int? brightness = null;
+            drawManualMenu(selectedLamp, brightness);
 
             while (true)
             {
                 ConsoleKeyInfo enteredText = Console.ReadKey();
-                while (!new String[] { "l", "b", "c", "x" }.Contains(enteredText.KeyChar.ToString().ToLower()))
+                while (!new String[] { "l", "b", "c", "x", "q", "r" }.Contains(enteredText.KeyChar.ToString().ToLower()))
                 {
                     enteredText = Console.ReadKey();
                 }
@@ -131,25 +168,92 @@ namespace huedotnet
                 switch (enteredText.KeyChar.ToString().ToLower())
                 {
                     case "x":
+                    case "q":
                         return;
                     case "l":
-                        showLampSelectionMenu();
+                        selectedLamp = showLampSelectionMenu();
                         break;
                     case "b":
-                        showBrightnessMenu();
+                        brightness = showBrightnessMenu();
                         break;
+                    case "r":
+                        if (selectedLamp.Equals("A"))
+                        {
+
+                        }
+                        break;
+                }
+
+                drawManualMenu(selectedLamp, brightness);
+            }
+        }
+
+        private void UpdateLampManual(int lampNumber, int? brightness)
+        {
+            HueLamp lamp = null;
+            lamps.TryGetValue(lampNumber, out lamp);
+            if (lamp == null)
+                return;
+
+            //if (brightness != null)
+            //    lamp.
+        }
+
+        private static String showLampSelectionMenu()
+        {
+            drawLampSelectMenu();
+
+            while (true)
+            {
+                Regex validLamps = new Regex("(a|(0-9)*|x|q)");
+                ConsoleKeyInfo enteredText = Console.ReadKey();
+                while (!validLamps.IsMatch(enteredText.KeyChar.ToString()))
+                {
+                    enteredText = Console.ReadKey();
+                }
+
+                switch (enteredText.KeyChar.ToString().ToLower())
+                {
+                    case "x":
+                    case "q":
+                    case "a":
+                        return "A";
+                    default:
+                        return enteredText.KeyChar.ToString();
                 }
             }
         }
 
-        private static void showLampSelectionMenu()
+        private static int? showBrightnessMenu()
         {
+            drawBrightnessSelectMenu();
 
-        }
+            while (true)
+            {
+                Regex validNumbers = new Regex("(0-9)*");
+                String enteredText = Console.ReadLine();
 
-        private static void showBrightnessMenu()
-        {
-
+                while (!new String[] { "q", "x" }.Contains(enteredText) && !validNumbers.IsMatch(enteredText))
+                {
+                    enteredText = Console.ReadLine();
+                }
+                
+                switch (enteredText)
+                {
+                    case "x":
+                    case "q":
+                        return null;
+                    default:
+                        if (String.IsNullOrEmpty(enteredText))
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return Convert.ToInt16(enteredText);
+                        }
+                }
+            }
         }
 
         private static void showPresetMenu()
@@ -169,14 +273,15 @@ namespace huedotnet
             Console.WriteLine("\teXit");
         }
 
-        private static void drawManualMenu()
+        private static void drawManualMenu(String lampNumber, int? brightness)
         {
             Console.Clear();
             Console.WriteLine("\n\n");
             Console.WriteLine("\t[Manual Mode]\n");
-            Console.WriteLine("\tLamp [0]");
-            Console.WriteLine("\tBrightness [ ]");
+            Console.WriteLine("\tLamp [" + lampNumber + "]");
+            Console.WriteLine("\tBrightness [" + (brightness == null ? " " : brightness.ToString()) + "]");
             Console.WriteLine("\tColor [ ]");
+            Console.WriteLine("\tRun");
             Console.WriteLine("\teXit");
         }
 
@@ -185,9 +290,22 @@ namespace huedotnet
             Console.Clear();
             Console.WriteLine("\n\n");
             Console.WriteLine("\t[Lamp Selection]\n");
-            Console.WriteLine("\tLamp [0]");
-            Console.WriteLine("\tBrightness [ ]");
-            Console.WriteLine("\tColor [ ]");
+            Console.WriteLine("\tA - All");
+            foreach (KeyValuePair<int, HueLamp> lampPair in lamps)
+            {
+                Console.WriteLine("\t" + lampPair.Key + " - " + lampPair.Value.GetName());
+            }
+            Console.WriteLine();
+            Console.WriteLine("\teXit");
+        }
+
+        private static void drawBrightnessSelectMenu()
+        {
+            Console.Clear();
+            Console.WriteLine("\n\n");
+            Console.WriteLine("\t[Brightness]\n");
+            Console.WriteLine("\t0 - 255");
+            Console.WriteLine();
             Console.WriteLine("\teXit");
         }
 
