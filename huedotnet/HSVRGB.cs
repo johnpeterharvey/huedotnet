@@ -2,11 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 
 namespace huedotnet
 {
     class HSVRGB
     {
+        public void ConvertToHSL(int r, int g, int b, out double hue, out double saturation, out double luminance)
+        {
+            Color newColor = Color.FromArgb(r, g, b);
+            hue = newColor.GetHue();
+            saturation = newColor.GetSaturation();
+            luminance = newColor.GetBrightness();
+        }
+
         public void ConvertToRGB(double hue, double sat, double bri, out int r, out int g, out int b)
         {
             double rprime, gprime, bprime;
