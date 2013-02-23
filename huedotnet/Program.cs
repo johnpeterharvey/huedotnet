@@ -295,7 +295,7 @@ namespace huedotnet
             Console.WriteLine("\n\n");
             Console.WriteLine("\t[Manual Mode]\n");
             Console.WriteLine("\tLamp [" + lampNumber + "]");
-            Console.WriteLine("\tBrightness [" + brightness.ToString() + "]");
+            Console.WriteLine("\tBrightness [" + (lampNumber.Equals("A") ? "---" : brightness.ToString()) + "]");
             Console.WriteLine("\tColor [ ]");
             Console.WriteLine("\tRun");
             Console.WriteLine("\teXit");
