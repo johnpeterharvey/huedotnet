@@ -154,7 +154,7 @@ namespace huedotnet
         private static void showManualMenu()
         {
             String selectedLamp = "A";
-            int? brightness = null;
+            int brightness = 255;
             drawManualMenu(selectedLamp, brightness);
 
             while (true)
@@ -179,7 +179,11 @@ namespace huedotnet
                     case "r":
                         if (selectedLamp.Equals("A"))
                         {
-
+                            ChangeAllLampState(new LampStateChange((HueLamp l) => l.brightness = brightness));
+                        }
+                        else
+                        {
+                            ChangeLampState(Convert.ToInt16(selectedLamp), new LampStateChange((HueLamp l) => l.brightness = brightness));
                         }
                         break;
                 }
@@ -224,7 +228,7 @@ namespace huedotnet
             }
         }
 
-        private static int? showBrightnessMenu()
+        private static int showBrightnessMenu()
         {
             drawBrightnessSelectMenu();
 
@@ -293,7 +297,7 @@ namespace huedotnet
             Console.WriteLine("\tA - All");
             foreach (KeyValuePair<int, HueLamp> lampPair in lamps)
             {
-                Console.WriteLine("\t" + lampPair.Key + " - " + lampPair.Value.GetName());
+                Console.WriteLine("\t" + lampPair.Key + " - " + lampPair.Value.name);
             }
             Console.WriteLine();
             Console.WriteLine("\teXit");
@@ -311,23 +315,38 @@ namespace huedotnet
 
         private static void AllOn()
         {
-            AllLamps(new AllLampsStateChange((HueLamp l) => l.SetState(true)));
+            ChangeAllLampState(new LampStateChange((HueLamp l) => l.state = true));
         }
 
         private static void AllOff()
         {
-            AllLamps(new AllLampsStateChange((HueLamp l) => l.SetState(false)));
+            ChangeAllLampState(new LampStateChange((HueLamp l) => l.state = false));
         }
 
-        private delegate void AllLampsStateChange(HueLamp lamp);
+        private delegate void LampStateChange(HueLamp lamp);
 
-        private static void AllLamps(Delegate stateChange)
+        private static void ChangeAllLampState(Delegate stateChange)
         {
             foreach (HueLamp lamp in lamps.Values)
             {
                 stateChange.DynamicInvoke(lamp);
             }
             messaging.SendMessage(lamps.Values.ToList<HueLamp>());
+        }
+
+        private static void ChangeLampState(int lampNumber, Delegate stateChange)
+        {
+            HueLamp lamp;
+            lamps.TryGetValue(lampNumber, out lamp);
+
+            if (lamp == null)
+            {
+                return;
+            }
+
+            stateChange.DynamicInvoke(lamp);
+
+            messaging.SendMessage(lamp);
         }
     }
 }
