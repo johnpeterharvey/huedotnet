@@ -154,7 +154,7 @@ namespace huedotnet
         private static void showManualMenu()
         {
             String selectedLamp = "A";
-            int brightness = 255;
+            double brightness = 255;
             drawManualMenu(selectedLamp, brightness);
 
             while (true)
@@ -172,9 +172,17 @@ namespace huedotnet
                         return;
                     case "l":
                         selectedLamp = showLampSelectionMenu();
+                        if (selectedLamp.Equals("A"))
+                        {
+                            brightness = 255;
+                        }
+                        else
+                        {
+                            brightness = GetCurrentLampBrightness(Convert.ToInt16(selectedLamp));
+                        }
                         break;
                     case "b":
-                        brightness = showBrightnessMenu();
+                        brightness = showBrightnessMenu(brightness);
                         break;
                     case "r":
                         if (selectedLamp.Equals("A"))
@@ -192,15 +200,19 @@ namespace huedotnet
             }
         }
 
-        private void UpdateLampManual(int lampNumber, int? brightness)
+        public static double GetCurrentLampBrightness(int lampNumber)
         {
-            HueLamp lamp = null;
+            HueLamp lamp;
             lamps.TryGetValue(lampNumber, out lamp);
-            if (lamp == null)
-                return;
 
-            //if (brightness != null)
-            //    lamp.
+            if (lamp == null)
+            {
+                return 255;
+            }
+            else
+            {
+                return lamp.brightness;
+            }
         }
 
         private static String showLampSelectionMenu()
@@ -228,9 +240,9 @@ namespace huedotnet
             }
         }
 
-        private static int showBrightnessMenu()
+        private static double showBrightnessMenu(double brightness)
         {
-            drawBrightnessSelectMenu();
+            drawBrightnessSelectMenu(brightness);
 
             while (true)
             {
@@ -246,11 +258,11 @@ namespace huedotnet
                 {
                     case "x":
                     case "q":
-                        return null;
+                        return brightness;
                     default:
                         if (String.IsNullOrEmpty(enteredText))
                         {
-                            return null;
+                            return brightness;
                         }
                         else
                         {
@@ -277,13 +289,13 @@ namespace huedotnet
             Console.WriteLine("\teXit");
         }
 
-        private static void drawManualMenu(String lampNumber, int? brightness)
+        private static void drawManualMenu(String lampNumber, double brightness)
         {
             Console.Clear();
             Console.WriteLine("\n\n");
             Console.WriteLine("\t[Manual Mode]\n");
             Console.WriteLine("\tLamp [" + lampNumber + "]");
-            Console.WriteLine("\tBrightness [" + (brightness == null ? " " : brightness.ToString()) + "]");
+            Console.WriteLine("\tBrightness [" + brightness.ToString() + "]");
             Console.WriteLine("\tColor [ ]");
             Console.WriteLine("\tRun");
             Console.WriteLine("\teXit");
@@ -303,12 +315,19 @@ namespace huedotnet
             Console.WriteLine("\teXit");
         }
 
-        private static void drawBrightnessSelectMenu()
+        private static void drawBrightnessSelectMenu(double currentBrightness)
         {
             Console.Clear();
             Console.WriteLine("\n\n");
             Console.WriteLine("\t[Brightness]\n");
-            Console.WriteLine("\t0 - 255");
+            Console.WriteLine("\t0 - 255\n");
+            Console.WriteLine("\tCurrent value: " + currentBrightness.ToString());
+
+            int current = (int) Math.Floor((currentBrightness * (Console.WindowWidth - 10)) / 255);
+            int left = Console.WindowWidth - 10 - current;
+
+            Console.Write("\t[" + new String('-', current) + new String(' ', left) + "]");
+
             Console.WriteLine();
             Console.WriteLine("\teXit");
         }
