@@ -24,23 +24,16 @@ namespace huedotnet
 
         public HueLamp ConvertToHueLamp(int lampNumber)
         {
-            HueLamp lamp = new HueLamp(lampNumber);
-
             JsonLamp jsonLamp = null;
             lights.TryGetValue(lampNumber, out jsonLamp);
 
             if (jsonLamp != null)
             {
-                lamp.SetName(jsonLamp.name);
-                lamp.SetState(jsonLamp.state.on);
-
-                int r, g, b;
-                hsvrgb.ConvertToRGB(jsonLamp.state.GetHueAsDegree(), jsonLamp.state.GetSaturation(), jsonLamp.state.GetBrightness(), out r, out g, out b);
-
-                lamp.SetRGB(r, g, b);
+                HueLamp lamp = new HueLamp(lampNumber, jsonLamp.name, jsonLamp.state.on, jsonLamp.state.GetHueAsDegree(), jsonLamp.state.GetSaturation(), jsonLamp.state.GetBrightness());
+                return lamp;
             }
 
-            return lamp;
+            return null;
         }
     }
 }
