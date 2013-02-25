@@ -59,9 +59,9 @@ namespace huedotnet
             ArrayList commands = new ArrayList();
             commands.Add("\"on\": " + (state == true ? "true" : "false"));
 
-            commands.Add("\"hue\":" + hue);
-            commands.Add("\"sat\":" + saturation);
-            commands.Add("\"bri\": " + brightness);
+            commands.Add("\"hue\":" + Math.Round(hue * UInt16.MaxValue));
+            commands.Add("\"sat\":" + Math.Round(saturation * 256));
+            commands.Add("\"bri\": " + Math.Round(brightness * 256));
             
             if (transitionTime != null) commands.Add("\"transitiontime\": " + transitionTime);
 

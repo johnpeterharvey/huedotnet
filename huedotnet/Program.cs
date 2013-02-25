@@ -154,7 +154,7 @@ namespace huedotnet
         private static void showManualMenu()
         {
             String selectedLamp = "A";
-            double brightness = 255;
+            double brightness = 254;
             drawManualMenu(selectedLamp, brightness);
 
             while (true)
@@ -174,7 +174,7 @@ namespace huedotnet
                         selectedLamp = showLampSelectionMenu();
                         if (selectedLamp.Equals("A"))
                         {
-                            brightness = 255;
+                            brightness = 254;
                         }
                         else
                         {
@@ -187,11 +187,11 @@ namespace huedotnet
                     case "r":
                         if (selectedLamp.Equals("A"))
                         {
-                            ChangeAllLampState(new LampStateChange((HueLamp l) => l.brightness = brightness));
+                            ChangeAllLampState(new LampStateChange((HueLamp l) => l.brightness = brightness / 255.0));
                         }
                         else
                         {
-                            ChangeLampState(Convert.ToInt16(selectedLamp), new LampStateChange((HueLamp l) => l.brightness = brightness));
+                            ChangeLampState(Convert.ToInt16(selectedLamp), new LampStateChange((HueLamp l) => l.brightness = brightness / 255.0));
                         }
                         break;
                 }
@@ -207,11 +207,11 @@ namespace huedotnet
 
             if (lamp == null)
             {
-                return 255;
+                return 254;
             }
             else
             {
-                return lamp.brightness;
+                return Math.Round(lamp.brightness * 255);
             }
         }
 
@@ -266,7 +266,11 @@ namespace huedotnet
                         }
                         else
                         {
-                            return Convert.ToInt16(enteredText);
+                            try {
+                                return Convert.ToInt16(enteredText);
+                            } catch {
+                                return brightness;
+                            }
                         }
                 }
             }
@@ -320,13 +324,13 @@ namespace huedotnet
             Console.Clear();
             Console.WriteLine("\n\n");
             Console.WriteLine("\t[Brightness]\n");
-            Console.WriteLine("\t0 - 255\n");
-            Console.WriteLine("\tCurrent value: " + currentBrightness.ToString());
+            Console.WriteLine("\t0 - 254\n");
+            Console.WriteLine("\tCurrent value: " + currentBrightness.ToString() + "\n");
 
-            int current = (int) Math.Floor((currentBrightness * (Console.WindowWidth - 10)) / 255);
-            int left = Console.WindowWidth - 10 - current;
+            int current = (int) Math.Floor((currentBrightness * (Console.WindowWidth - 20)) / 254);
+            int left = Console.WindowWidth - 20 - current;
 
-            Console.Write("\t[" + new String('-', current) + new String(' ', left) + "]");
+            Console.WriteLine("\t[" + new String('-', current) + new String(' ', left) + "]\n");
 
             Console.WriteLine();
             Console.WriteLine("\teXit");
@@ -360,6 +364,7 @@ namespace huedotnet
 
             if (lamp == null)
             {
+                Console.WriteLine("Didn't find lamp for number " + lampNumber);
                 return;
             }
 

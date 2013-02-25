@@ -23,6 +23,7 @@ namespace huedotnet
         {
             WebClient webClient = new WebClient();
             webClient.BaseAddress = "http://" + bridgeIP + "/api/" + username + "/lights/" + lampState.GetLampNumber() + "/state";
+            String json = lampState.GetJson();
 
             Stream writeData = webClient.OpenWrite(webClient.BaseAddress, "PUT");
             writeData.Write(Encoding.ASCII.GetBytes(lampState.GetJson()), 0, lampState.GetJson().Length);
